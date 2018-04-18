@@ -1,0 +1,199 @@
+/**
+ * Write a description of class EOSFrame here.
+ *
+ * @author (your name)
+ * @version (a version number or a date)
+ */
+import java.util.*;
+import javax.swing.*;
+import java.awt.*;
+public class EOSFrame extends BasicFrame
+{
+    public EOSFrame(int a, int b, String name)
+    {
+        super(a,b,name);
+        createGUI();
+        //mainFrame.pack();
+    }
+    JPanel drawPanel;
+    JLabel ecoScore;
+    JLabel growthRate;
+    JLabel curYear;
+    JButton slowSpeed; JButton upSpeed; JLabel gameSpeed;
+    JProgressBar vicProgress;
+    ArrayList<ButtonData> buttonFunctions = new ArrayList<ButtonData>();
+    private void createGUI()
+    {
+        JTabbedPane home = new JTabbedPane();
+
+        JPanel homePanel = new JPanel(new GridBagLayout());
+        home.addTab("Home",homePanel);
+
+        JPanel decisionsPanel = new JPanel();
+        home.addTab("Decisions",decisionsPanel);
+
+        JPanel statsPanel = new JPanel();
+        home.addTab("Statistics",statsPanel);
+
+        JPanel helpPanel = new JPanel();
+        home.addTab("Help",helpPanel);        
+
+        //homePanel construction
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.FIRST_LINE_START;
+        c.weighty = 0;
+        c.gridx = 0;
+        c.gridy = 0;
+        c.insets = new Insets(15, 10, 0, 0);
+
+        JLabel citHappiness = new JLabel("Citizen Happiness: 10");
+        homePanel.add(citHappiness,c);
+        c.gridy++;
+
+        growthRate = new JLabel("Growth Rate: 1EU/year");
+        homePanel.add(growthRate,c);
+        c.gridy++;
+
+        JLabel policyPower = new JLabel("Policy Power: 10");
+        homePanel.add(policyPower,c);
+        c.gridy++;;
+
+        JLabel productionBalance = new JLabel("<html><h3>Production Balance</html></h3>");
+        c.insets = new Insets(20, 10, 0, 0);
+        homePanel.add(productionBalance,c);
+        c.insets = new Insets(5, 10, 0, 0);
+        c.gridy++;
+
+        c.ipady = 100;
+        c.ipadx = 100;
+
+        drawPanel = new JPanel();
+        drawPanel.setPreferredSize(new Dimension(100,100));
+
+        drawPPC d = new drawPPC();
+
+        homePanel.add(d,c);
+        d.repaint();
+        c.gridx++;
+        c.gridy = 0;
+        c.ipady = 0;
+        c.ipadx = 0;
+        c.insets = new Insets(15, 10, 0, 0);
+
+        ecoScore = new JLabel("Economic Score: 0 EU");
+        homePanel.add(ecoScore,c);
+        c.gridy++;
+
+        JLabel curAge = new JLabel("Age: Stone Age");
+        homePanel.add(curAge,c);
+        c.gridy++;
+
+        curYear = new JLabel("Year: 2000 B.C.");
+        homePanel.add(curYear,c);
+        c.gridy++;
+
+        JPanel speedButtons = new JPanel(new GridLayout(3,1));
+        homePanel.add(speedButtons,c);
+
+        slowSpeed = new JButton("Slow Game Speed");
+        speedButtons.add(slowSpeed);
+
+        upSpeed = new JButton("Up Game Speed");
+        speedButtons.add(upSpeed);
+
+        gameSpeed = new JLabel("Current Speed: ");
+        speedButtons.add(gameSpeed);
+        
+        c.gridy++;
+        vicProgress = new JProgressBar(0,1000);
+        homePanel.add(vicProgress,c);
+        
+        mainPanel.add(home);
+        
+        //Help Panel Construction
+
+        JEditorPane editorPane = new JEditorPane();
+        editorPane.setEditable(false);
+
+        try {
+            editorPane.setPage("https://raw.githubusercontent.com/higley53/EconomiesOfScale/master/README.md");
+        } catch (Exception e) {
+            System.err.println("Attempted to read a bad URL");
+        }
+        
+        JScrollPane editorScrollPane = new JScrollPane(editorPane);
+        editorScrollPane.setVerticalScrollBarPolicy(
+            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            
+        editorScrollPane.setPreferredSize(new Dimension(325, 300));
+        editorScrollPane.setMinimumSize(new Dimension(10, 10));
+
+        helpPanel.add(editorScrollPane);
+        
+        
+        //Decisions Panel Construction
+        JPanel decisionHelpPanel = new JPanel(); 
+        JScrollPane decisionsScrollPanel = new JScrollPane(decisionHelpPanel);
+        decisionsScrollPanel.setHorizontalScrollBarPolicy(
+            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        
+        decisionsScrollPanel.setPreferredSize(new Dimension(315,300));
+        
+        decisionsPanel.add(decisionsScrollPanel);
+        
+        
+        //Stone Age Decisions
+        int[] stoneAgeCapFactors = {1,0,2,-1,-2,2};
+        int[] stoneAgeConFactors = {0,1,-1,3,2,-2};
+        String[] stoneAgeDecisionNames = {"Create stone hammers","Forage for berries","Build huts",
+            "Hold a festival","Enforce matriarchy","Enforce patriarchy"};
+        JPanel stoneAgeButtons = new JPanel(new GridLayout(stoneAgeCapFactors.length,2));
+        
+        for(int i = 0; i < stoneAgeCapFactors.length; i++)
+        {
+            JButton b = new JButton(stoneAgeDecisionNames[i]);
+            String capOperator = ""; String conOperator = "";
+            if(stoneAgeCapFactors[i] >= 0)
+            {
+                capOperator = "+";
+            }
+            if(stoneAgeConFactors[i] >= 0)
+            {
+                conOperator = "+";
+            }
+            b.setToolTipText("Capital " + capOperator + stoneAgeCapFactors[i] + " Consumer " + conOperator  + stoneAgeConFactors[i] +
+            " Policy Power Cost: 20");
+            stoneAgeButtons.add(b);
+            
+            buttonFunctions.add(new ButtonData(stoneAgeCapFactors[i],stoneAgeConFactors[i],
+            stoneAgeDecisionNames[i],b));
+        }
+        
+        decisionHelpPanel.add(stoneAgeButtons);
+        
+        mainPanel.revalidate();
+    }
+    
+    class drawPPC extends JPanel{
+        public void paintComponent(Graphics g) 
+        {
+            Graphics2D g2d = (Graphics2D) g;
+
+            int x = drawPanel.getX();
+            int y = drawPanel.getY();
+
+            g2d.setColor(Color.BLACK);
+            g2d.setStroke(new BasicStroke(4f));
+
+            g2d.drawLine(x,y,x,y+100);
+
+            g2d.drawLine(x,y+100,x+100,y+100);
+
+            g2d.setStroke(new BasicStroke(3f));
+            g2d.setColor(Color.BLUE);
+
+            g2d.drawLine(x+2,y+2,x+98,y+98);
+            this.revalidate();
+        }
+    }
+}
